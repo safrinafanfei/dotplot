@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Adding Labels</title>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+		<style type="text/css">
+
+			body {
+				background-color: white;
+  				font-family: 'roboto',arial,helvetica,sans-serif !important;
+				font-size: 20px;
+			}
+
+			h1{
+				color: #333;
+				font-size:1.0em;
+  				font-family: 'crimson', serif;
+
+				margin: 20px 0 0 100px;
+			}
+
+			h3{
+				color: #333;
+				font-size:1.0em;
+  				font-family: 'crimson', serif;
+
+				margin: 0 0 20px 100px;
+			}
+
+			p {
+				margin-left: 100px;
+				font-size: 11pt;
+				color: black;
+			}
+			#main{
+				width: 1000px;
+				display: block;
+				margin: 0 auto;
+			}
+			div.y2015 {
+				color: #FFB300;
+				display: inline;
+			}
+			div.y1990 {
+				color: #057D9F;
+				display: inline;
+			}
+
+			svg {
+/*				background-color: #d3d3d3;
+*/				display: block;
+				margin: 0 auto;
+			}
+
+			circle {
+				stroke-width: 1;
+			}
+
+			circle.y2015 {
+				fill: #057D9F;
+			}
+
+			circle.y1990 {
+				fill: #FFB300;
+			}
+
+			circle:hover {
+				opacity: .5;
+			}
+
+			line.grid {
+				stroke: #eee;
+			}
+
+/*			line.between {
+				stroke: #B0AA9A;
+			}*/
+
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: #eee;
+				shape-rendering: crispEdges;
+			}
+
+			.axis text {
+  				font-family: 'roboto',arial,helvetica,sans-serif !important;
+				font-size: 11px;
+			}
+
+			.xlabel {
+  				font-family: 'roboto',arial,helvetica,sans-serif !important;
+				font-size: 11px;
+				color: gray;
+			}
+
+			/*//slider*/
+			#slider{
+			  width: 80%;
+			  height: 4px;
+			  border: solid;
+			  border-width: 1px;
+			  border-color: #CCC;
+			  background-color: #f5f5f5;
+			}
+
+			.slidercontainer{
+			  position:relative;
+			  width: 100%;
+			  margin-bottom: 100px;
+
+			}
+
+			.yearTick {
+			    position: absolute;
+			    width: 1px;
+			    height: 5px;
+			    left: 0;
+			    top: 10px;
+			    background: #DDD;
+			}
+
+			.yearLabel {
+			    position: absolute;
+			    width: 20px;
+			    height: 13px;
+			    top: 41px;
+			    background: #FFF;
+			    font: 11px arial,helvetica,sans-serif;
+			    color: #999;
+			    text-align: center;
+			}
+
+			#play{
+			    display: inline-block;
+			    border-radius: 4px;
+			    background-color: #eeeeee;
+			    border: none;
+			    color: black;
+			    text-align: center;
+			    font-size: 14px;
+			    padding: 5px;
+			    width: 50px;
+			    transition: all 0.5s;
+			    cursor: pointer;
+			}
+
+
+		</style>
+	</head>
+	<body>
+
+		<div id="main">
+			<h1>Opioid Overdose Death Rates and All Drug Overdose Death Rates per 100,000 Population (Age-Adjusted)</h1>
+			<h3><div class="y1990">1990</div> versus <div class="y2015">2015</div></h3>
+			<p>This dotplot shows the difference in the neonatal morality rate from 1990 to 2015 by state</p>
+			<p>Note:</p>
+			<div class="slidercontainer">
+			    <input id="slider" type="range" min="1990" max="2015" value="1990" step="3">
+			    <span id="range">1990</span>
+			    <div class="yearLabel" style="left:0%">'90</div>
+			    <div class="yearLabel" style="left:10%">'93</div>
+			    <div class="yearLabel" style="left:20%">'96</div>
+			    <div class="yearLabel" style="left:30%">'99</div>
+			    <div class="yearLabel" style="left:40%">'02</div>
+			    <div class="yearLabel" style="left:50%">'05</div>
+			    <div class="yearLabel" style="left:60%">'08</div>
+			    <div class="yearLabel" style="left:70%">'11</div>
+			    <div class="yearLabel" style="left:80%">'14</div>
+
+			    <button class="button" name="play" id="play"><span>Play</span></button>
+			  </div>
+			</div>
+		</div>
+		<script type="text/javascript">
+
+		// this is the size of the svg container -- the white part
+			var fullwidth = 1/2* window.innerWidth,
+				fullheight = 800;
+
+			// these are the margins around the graph. Axes labels go in margins.
+			var margin = {top: 20, right: 25, bottom: 20, left: 200};
+
+			var width = fullwidth - margin.left - margin.right,
+    		height = fullheight - margin.top - margin.bottom;
+
+			var widthScale = d3.scale.linear()
+								.range([ 0, width]);
+
+			var heightScale = d3.scale.ordinal()
+								.rangeRoundBands([ margin.top, height], 0.2);
+
+			var xAxis = d3.svg.axis()
+							.scale(widthScale)
+							.orient("bottom");
+
+			var yAxis = d3.svg.axis()
+							.scale(heightScale)
+							.orient("left")
+							.innerTickSize([0]);
+
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", fullwidth)
+						.attr("height", fullheight);
+
+
+			d3.csv("data.csv", function(error, data) {
+
+				if (error) {
+					console.log("error reading file");
+				}
+
+				data.sort(function(a, b) {
+					return d3.descending(+a.y2015, +b.y2015);
+				});
+
+
+				widthScale.domain([0, 40]);
+
+				// js map: will make a new array out of all the d.region fields
+				heightScale.domain(data.map(function(d) { return d.region; } ));
+
+
+				// Make the faint lines from y labels to highest dot
+
+				var linesGrid = svg.selectAll("lines.grid")
+					.data(data)
+					.enter()
+					.append("line");
+
+				linesGrid.attr("class", "grid")
+					.attr("x1", margin.left)
+					.attr("y1", function(d) {
+						return heightScale(d.region) + heightScale.rangeBand()/2;
+					})
+					.attr("x2", function(d) {
+						return margin.left + widthScale(+d.y2015);
+
+					})
+					.attr("y2", function(d) {
+						return heightScale(d.region) + heightScale.rangeBand()/2;
+					});
+
+				// Make the dotted lines between the dots
+
+				var linesBetween = svg.selectAll("lines.between")
+					.data(data)
+					.enter()
+					.append("line");
+
+				linesBetween.attr("class", "between")
+					.attr("x1", function(d) {
+						if(isNaN(d.y1990)){
+							return margin.left;
+						}else{
+							return margin.left + widthScale(+d.y1990);
+						}
+					})
+					.attr("y1", function(d) {
+						return heightScale(d.region) + heightScale.rangeBand()/2;
+					})
+					.attr("x2", function(d) {
+						return margin.left + widthScale(d.y2015);
+					})
+					.attr("y2", function(d) {
+						return heightScale(d.region) + heightScale.rangeBand()/2;
+					})
+					// .attr("stroke-dasharray", "5,5")
+					.attr("stroke-width", "9")
+					.attr("stroke",function(d){
+						if(isNaN(d.y1990)){
+							return "#eeeeee"
+						}else{
+							return "#B0AA9A"
+						}
+					});
+
+
+				// Make the dots for 1990
+
+				var dots1990 = svg.selectAll("circle.y1990")
+						.data(data)
+						.enter()
+						.append("circle");
+
+				dots1990
+					.attr("class", "y1990")
+					.attr("cx", function(d) {
+						if (isNaN(d.y1990)) {
+							return margin.left;
+						}else{
+							return margin.left + widthScale(+d.y1990);
+						}
+					})
+					.attr("r", heightScale.rangeBand()/1.8)
+					.attr("cy", function(d) {
+						return heightScale(d.region) + heightScale.rangeBand()/2;
+					})
+					.style("fill", function(d){
+						if (isNaN(d.y1990)) {
+							return "#eeeeee";
+						}
+					})
+					.append("title")
+					.text(function(d) {
+						return d.region + " in 1990: " + d.y1990 + "%";
+					});
+
+				// Make the dots for 2013
+
+				var dotsnew = svg.selectAll("circle.new")
+						.data(data)
+						.enter()
+						.append("circle");
+
+				dotsnew
+					.attr("class", "y2015")
+					.attr("cx", function(d) {
+						return margin.left + widthScale(+d.y2015);
+					})
+					.attr("r", heightScale.rangeBand()/1.8)
+					.attr("cy", function(d) {
+						return heightScale(d.region) + heightScale.rangeBand()/2;
+					})
+					.style("fill", function(d){
+						if (d.region === "World") {
+							return "#CC0000";
+						}
+					})
+					.append("title")
+					.text(function(d) {
+						return d.region + " in 2013: " + d.y2015 + "%";
+					});
+
+					// add the axes
+
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(" + margin.left + "," + height + ")")
+					.call(xAxis);
+
+				svg.append("g")
+					.attr("class", "y axis")
+					.attr("transform", "translate(" + margin.left + ",0)")
+					.call(yAxis);
+
+				svg.append("text")
+					.attr("class", "xlabel")
+        	.attr("transform", "translate(" + (margin.left + width / 2) + " ," +
+        				(height + margin.bottom) + ")")
+        	.style("text-anchor", "middle")
+        	.attr("dy", "12")
+        	.text("per 100,000 population");
+
+       	// Style one of the Y labels bold:
+
+        // a hack that works if you can unravel the selections - to style "The World" bold in the axis label, which is the 8th element:
+        var allYAxisLabels = d3.selectAll("g.y.axis g.tick text")[0]; // un-nest array
+        // d3.select(allYAxisLabels[5]).style("font-weight", "bold");
+        	// You could also use tick formatting to get a % sign on each axis tick
+
+			});
+		
+		var running = false;
+    	var timer;
+
+    $('button').on('click', function() {
+        var duration = 1000,
+            maxstep = 2015, //pretending to be 2014
+            minstep = 1990;
+
+        if (running == true) {
+            $("button").html("play");
+            running = false;
+            clearInterval(timer);
+        } else if (running == false) {
+            $('button').html("Pause");
+
+            sliderValue = $("#slider").val();
+
+            timer = setInterval(function() {
+                if (sliderValue < maxstep) {
+                    sliderValue = sliderValue * 1 + 5;
+                    $('#slider').val(sliderValue);
+                    if (sliderValue == 2015){
+                      $('#range').html("2014");
+                      console.log(sliderValue);
+                    } else{
+                      $('#range').html(sliderValue);
+                    }
+                }
+                $('#slider').val(sliderValue);
+                update();
+            }, duration);
+            running = true;
+        }
+
+    });
+
+    $("#slider").on("change", function() {
+        update();
+        $("#range").html($("#slider").val());
+        clearInterval(timer);
+        $("button").html("Play");
+    });
+
+    function update() {
+        globalPopulation.forEach(function(d) {
+            switch ($("#slider").val()) {
+                case "1990":
+                    popbyid[d.id] = +d.y1980;
+                    break;
+                case "1993":
+                    popbyid[d.id] = +d.y1993;
+                    break;
+                case "1996":
+                    popbyid[d.id] = +d.y1996;
+                    break;
+                case "1999":
+                    popbyid[d.id] = +d.y1999;
+                    break;
+                case "2002":
+                    popbyid[d.id] = +d.y2001;
+                    break;
+                case "2005":
+                    popbyid[d.id] = +d.y2004;
+                    break;
+                case "2008":
+                    popbyid[d.id] = +d.y2007;
+                    break;
+                case "2011":
+                    popbyid[d.id] = +d.y2010;
+                    break;
+                case "2014":
+                    popbyid[d.id] = +d.y2014;
+                    break;
+            }
+        });
+    }
+
+
+
+		</script>
+
+	</body>
+</html>
