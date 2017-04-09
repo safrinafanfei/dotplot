@@ -215,234 +215,374 @@
 					.attr("width", fullwidth)
 					.attr("height", fullheight);
 
-		d3.csv("data.csv", InitChart);
+function drawDotplot() {
+	var myData; 
+
+    d3.csv("data.csv", InitChart);
+
+    function InitChart(error, data) {
+        if (error) {
+            console.log("error reading file");
+        }
+        myData = data;
+        // data.sort(function(a, b) {
+        // 	return d3.descending(+a[newdata], +b[newdata]);
+        // });
+
+        heightScale.domain(data.map(function(d) {
+            return d.region;
+        }));
 
 
-		function InitChart(error, data) {
-			if (error) {
-				console.log("error reading file");
-			}
+        var linesGrid = svg.selectAll("lines.grid")
+            .data(data)
+            .enter()
+            .append("line");
 
-			// data.sort(function(a, b) {
-			// 	return d3.descending(+a[newdata], +b[newdata]);
-			// });
-			
-			heightScale.domain(data.map(function(d) { return d.region; } ));
-
-
-			var linesGrid = svg.selectAll("lines.grid")
-				.data(data)
-				.enter()
-				.append("line");
-
-			linesGrid.attr("class", "grid")
-				.attr("x1", margin.left)
-				.attr("y1", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.attr("x2", function(d) {
-					return margin.left + widthScale(+d.y2015);
-				})
-				.attr("y2", function(d) {
-					var hey = heightScale(d.region) + heightScale.rangeBand()/2;
-					return hey;
-				});
+        linesGrid.attr("class", "grid")
+            .attr("x1", margin.left)
+            .attr("y1", function(d) {
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            })
+            .attr("x2", function(d) {
+                return margin.left + widthScale(+d.y2015);
+            })
+            .attr("y2", function(d) {
+                var hey = heightScale(d.region) + heightScale.rangeBand() / 2;
+                return hey;
+            });
 
 
-			// js map: will make a new array out of all the d.region fields
-			var linesBetween = svg.selectAll("lines.between")
-				.data(data)
-				.enter()
-				.append("line");
+        // js map: will make a new array out of all the d.region fields
+        var linesBetween = svg.selectAll("lines.between")
+            .data(data)
+            .enter()
+            .append("line");
 
-			linesBetween.attr("class", "between")
-				.attr("x1", function(d) {
-					if(isNaN(d.y2000)){
-						return margin.left;
-					}else{
-						return margin.left + widthScale(+d.y2000);
-					}
-				})
-				.attr("y1", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.attr("x2", function(d) {
-					return margin.left + widthScale(d.y2015);
-				})
-				.attr("y2", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.attr("stroke-width", "9")
-				.attr("stroke",function(d){
-					if(isNaN(d.y2000)){
-						return "#eeeeee"
-					}else{
-						return "#B0AA9A"
-					}
-				});
-			// Make the dots for 2000
-			var dots2000 = svg.selectAll("circle.y2000")
-					.data(data)
-					.enter()
-					.append("circle");
+        linesBetween.attr("class", "between")
+            .attr("x1", function(d) {
+                if (isNaN(d.y2000)) {
+                    return margin.left;
+                } else {
+                    return margin.left + widthScale(+d.y2000);
+                }
+            })
+            .attr("y1", function(d) {
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            })
+            .attr("x2", function(d) {
+                return margin.left + widthScale(d.y2015);
+            })
+            .attr("y2", function(d) {
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            })
+            .attr("stroke-width", "9")
+            .attr("stroke", function(d) {
+                if (isNaN(d.y2000)) {
+                    return "#eeeeee"
+                } else {
+                    return "#B0AA9A"
+                }
+            });
+        // Make the dots for 2000
+        var dots2000 = svg.selectAll("circle.y2000")
+            .data(data)
+            .enter()
+            .append("circle");
 
-			dots2000
-				.attr("class", "y2000")
-				.attr("cx", function(d) {
-					if (isNaN(d.y2000)) {
-						return margin.left;
-					}else{
-						return margin.left + widthScale(+d.y2000);
-					}
-				})
-				.attr("r", heightScale.rangeBand()/1.8)
-				.attr("cy", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.style("fill", function(d){
-					if (isNaN(d.y2000)) {
-						return "#eeeeee";
-					}else if(d.region === "United States"){
-						return "#CC0000";
-					}
-				})
-				.append("title")
-				.text(function(d) {
-					return d.region + " in 2000: " + d.y2000 + "%";
-				});
-				// add the axes
+        dots2000
+            .attr("class", "y2000")
+            .attr("cx", function(d) {
+                if (isNaN(d.y2000)) {
+                    return margin.left;
+                } else {
+                    return margin.left + widthScale(+d.y2000);
+                }
+            })
+            .attr("r", heightScale.rangeBand() / 1.8)
+            .attr("cy", function(d) {
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            })
+            .style("fill", function(d) {
+                if (isNaN(d.y2000)) {
+                    return "#eeeeee";
+                } else if (d.region === "United States") {
+                    return "#CC0000";
+                }
+            })
+            .append("title")
+            .text(function(d) {
+                return d.region + " in 2000: " + d.y2000 + "%";
+            });
+        // add the axes
 
-			svg.append("g")
-				.attr("class", "x axis")
-				.attr("transform", "translate(" + margin.left + "," + height + ")")
-				.call(xAxis);
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(" + margin.left + "," + height + ")")
+            .call(xAxis);
 
-			svg.append("g")
-				.attr("class", "y axis")
-				.attr("transform", "translate(" + margin.left + ",0)")
-				.call(yAxis);
+        svg.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(" + margin.left + ",0)")
+            .call(yAxis);
 
-			svg.append("text")
-				.attr("class", "xlabel")
-    			.attr("transform", "translate(" + (margin.left + width / 2) + " ," +
-    				(height + margin.bottom) + ")")
-    			.style("text-anchor", "middle")
-    			.attr("dy", "12")
-    			.text("per 100,000 population");
+        svg.append("text")
+            .attr("class", "xlabel")
+            .attr("transform", "translate(" + (margin.left + width / 2) + " ," +
+                (height + margin.bottom) + ")")
+            .style("text-anchor", "middle")
+            .attr("dy", "12")
+            .text("per 100,000 population");
 
-    		
 
-			var dotsnew = svg.selectAll("circle.new")
-					.data(data)
-					.enter()
-					.append("circle");
-			
-			dotsnew
-				.attr("class", "newdata")
-				.attr("cx", function(d) {
-					return margin.left + widthScale(d.y2015);
-				})
-				.attr("r", heightScale.rangeBand()/1.8)
-				.attr("cy", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.style("fill", function(d){
-					if (d.region === "United States") {
-						return "#CC0000";
-					}
-				})
-				.append("title")
-				.text(function(d) {
-					return d.region + " in 2013: " + d.y2015 + "%";
-				});
-   		// Style one of the Y labels bold:
-    		var allYAxisLabels = d3.selectAll("g.y.axis g.tick text")[0]; // un-nest array
 
-    		// resize();
-		};
+        var dotsnew = svg.selectAll("circle.new")
+            .data(data)
+            .enter()
+            .append("circle");
 
-		function updateChart(datanew){
+        dotsnew
+            .attr("class", "newdata")
+            .attr("cx", function(d) {
+                return margin.left + widthScale(d.y2015);
+            })
+            .attr("r", heightScale.rangeBand() / 1.8)
+            .attr("cy", function(d) {
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            })
+            .style("fill", function(d) {
+                if (d.region === "United States") {
+                    return "#CC0000";
+                }
+            })
+            .append("title")
+            .text(function(d) {
+                return d.region + " in 2013: " + d.y2015 + "%";
+            });
+        // Style one of the Y labels bold:
+        var allYAxisLabels = d3.selectAll("g.y.axis g.tick text")[0]; // un-nest array
 
-			d3.csv("data.csv", function(error, data) {
-			if (error) {
-				console.log("error reading file");
-			}
-			heightScale.domain(data.map(function(d) { return d.region; } ));
-			
-			// data.sort(function(a, b) {
-			// 	return d3.descending(+a.y2015, +b.y2015);
-			// });
+    };
 
-			var linesGrid = d3.selectAll(".grid");
+    function updateChart(datanew) {
 
-			linesGrid
-				.attr("x1", margin.left)
-				.attr("y1", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.attr("x2", function(d) {
-					// console.log(widthScale(+d[datanew]));
-					if (isNaN(d[datanew])) {
-						return margin.left;
-					}else{
-						return margin.left + widthScale(+d[datanew]);
-					}
-				})
-				.attr("y2", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				});
+        d3.csv("data.csv", function(error, data) {
+            if (error) {
+                console.log("error reading file");
+            }
+            heightScale.domain(data.map(function(d) {
+                return d.region;
+            }));
 
-			var linesBetween = d3.selectAll(".between")
-				.attr("x1", function(d) {
-					if(isNaN(d.y2000)){
-						return margin.left;
-					}else{
-						return margin.left + widthScale(+d.y2000);
-					}
-				})
-				.attr("y1", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				})
-				.attr("x2", function(d) {
-					if (isNaN(d[datanew])) {
-						return margin.left;
-					}else{
-						return margin.left + widthScale(+d[datanew]);
-					}
-				})
-				.attr("y2", function(d) {
-					return heightScale(d.region) + heightScale.rangeBand()/2;
-				});
+            // data.sort(function(a, b) {
+            // 	return d3.descending(+a.y2015, +b.y2015);
+            // });
 
-				var dotsnew = d3.selectAll(".newdata")
-					.attr("cx", function(d) {
-						if (isNaN(d[datanew])) {
-						return margin.left;
-					}else{
+            var linesGrid = d3.selectAll(".grid");
 
-						var cx = margin.left + widthScale(d[datanew]);
-						console.log(cx);
-						// console.log(heightScale.rangeBand()/1.8)
-						return cx;
-					}
-				})
-					.attr("r", heightScale.rangeBand()/1.8)
-					.attr("cy", function(d) {
-						var cy = heightScale(d.region) + heightScale.rangeBand()/2;
-						return cy;
-				})
-				.style("fill", function(d){
-					if (d.region === "United States") {
-						return "#CC0000";
-					}
-				})
-				.append("title")
-				.text(function(d) {
-					return d.region + " in 2013: " + d[datanew] + "%";
-				});
-			});
-		}
+            linesGrid
+                .attr("x1", margin.left)
+                .attr("y1", function(d) {
+                    return heightScale(d.region) + heightScale.rangeBand() / 2;
+                })
+                .attr("x2", function(d) {
+                    // console.log(widthScale(+d[datanew]));
+                    if (isNaN(d[datanew])) {
+                        return margin.left;
+                    } else {
+                        return margin.left + widthScale(+d[datanew]);
+                    }
+                })
+                .attr("y2", function(d) {
+                    return heightScale(d.region) + heightScale.rangeBand() / 2;
+                });
 
+            var linesBetween = d3.selectAll(".between")
+                .attr("x1", function(d) {
+                    if (isNaN(d.y2000)) {
+                        return margin.left;
+                    } else {
+                        return margin.left + widthScale(+d.y2000);
+                    }
+                })
+                .attr("y1", function(d) {
+                    return heightScale(d.region) + heightScale.rangeBand() / 2;
+                })
+                .attr("x2", function(d) {
+                    if (isNaN(d[datanew])) {
+                        return margin.left;
+                    } else {
+                        return margin.left + widthScale(+d[datanew]);
+                    }
+                })
+                .attr("y2", function(d) {
+                    return heightScale(d.region) + heightScale.rangeBand() / 2;
+                });
+
+            var dotsnew = d3.selectAll(".newdata")
+                .attr("cx", function(d) {
+                    if (isNaN(d[datanew])) {
+                        return margin.left;
+                    } else {
+                        var cx = margin.left + widthScale(d[datanew]);
+                        console.log(cx);
+                        // console.log(heightScale.rangeBand()/1.8)
+                        return cx;
+                    }
+                })
+                .attr("r", heightScale.rangeBand() / 1.8)
+                .attr("cy", function(d) {
+                    var cy = heightScale(d.region) + heightScale.rangeBand() / 2;
+                    return cy;
+                })
+                .style("fill", function(d) {
+                    if (d.region === "United States") {
+                        return "#CC0000";
+                    }
+                })
+                .append("title")
+                .text(function(d) {
+                    return d.region + " in 2013: " + d[datanew] + "%";
+                });
+        });
+    }
+
+    function resize(datanew) {
+        fullwidth = window.innerWidth / 2,
+            width = fullwidth - margin.left - margin.right,
+            height = fullheight - margin.top - margin.bottom;
+
+        widthScale = d3.scale.linear()
+            .range([0, width]);
+
+        heightScale = d3.scale.ordinal()
+            .rangeRoundBands([margin.top, height], 0.2);
+
+        widthScale.domain([0, 40]);
+		
+		heightScale.domain(myData.map(function(d) {
+            return d.region;
+        }));
+
+        xAxis = d3.svg.axis()
+            .scale(widthScale)
+            .orient("bottom");
+
+        yAxis = d3.svg.axis()
+            .scale(heightScale)
+            .orient("left")
+            .innerTickSize([0]);
+
+        svg = d3.select(".chart")
+            .attr("width", fullwidth)
+            .attr("height", fullheight);
+
+        d3.select(".chart .x.axis")
+            .attr("transform", "translate(" + margin.left + "," + height + ")")
+            .call(xAxis);
+
+        d3.selectAll(".grid")
+        	.data(myData)
+        	.attr("x1", margin.left)
+            .attr("y1", function(d) {
+            	console.log(heightScale(d.region));
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            })
+            .attr("x2", function(d) {
+                    // console.log(widthScale(+d[datanew]));
+                if (isNaN(d[datanew])) {
+                    return margin.left;
+                } else {
+                    return margin.left + widthScale(+d[datanew]);
+                }
+            })
+            .attr("y2", function(d) {
+                return heightScale(d.region) + heightScale.rangeBand() / 2;
+            });
+
+        d3.selectAll(".between")
+        		.data(myData)
+                .attr("x1", function(d) {
+                    if (isNaN(d.y2000)) {
+                        return margin.left;
+                    } else {
+                        return margin.left + widthScale(+d.y2000);
+                    }
+                })
+                .attr("y1", function(d) {
+                    return heightScale(d.region) + heightScale.rangeBand() / 2;
+                })
+                .attr("x2", function(d) {
+                    if (isNaN(d[datanew])) {
+                        return margin.left;
+                    } else {
+                        return margin.left + widthScale(+d[datanew]);
+                    }
+                })
+                .attr("y2", function(d) {
+                    return heightScale(d.region) + heightScale.rangeBand() / 2;
+                });
+
+        d3.selectAll(".newdata")
+        		.data(myData)
+                .attr("cx", function(d) {
+                    if (isNaN(d[datanew])) {
+                        return margin.left;
+                    } else {
+                        var cx = margin.left + widthScale(d[datanew]);
+                        console.log(cx);
+                        // console.log(heightScale.rangeBand()/1.8)
+                        return cx;
+                    }
+                })
+                .attr("r", heightScale.rangeBand() / 1.8)
+                .attr("cy", function(d) {
+                    var cy = heightScale(d.region) + heightScale.rangeBand() / 2;
+                    return cy;
+                })
+                .style("fill", function(d) {
+                    if (d.region === "United States") {
+                        return "#CC0000";
+                    }
+                })
+                .append("title")
+                .text(function(d) {
+                    return d.region + " in 2013: " + d[datanew] + "%";
+                });
+
+            d3.selectAll("circle.y2000")
+            	.data(myData)
+            	.attr("cx", function(d) {
+	                if (isNaN(d.y2000)) {
+	                    return margin.left;
+	                } else {
+	                    return margin.left + widthScale(+d.y2000);
+	                }
+            	})
+            	.attr("r", heightScale.rangeBand() / 1.8)
+            	.attr("cy", function(d) {
+               	 	return heightScale(d.region) + heightScale.rangeBand() / 2;
+            	})
+	            .style("fill", function(d) {
+	                if (isNaN(d.y2000)) {
+	                    return "#eeeeee";
+	                } else if (d.region === "United States") {
+	                    return "#CC0000";
+	                }
+	            })
+	            .append("title")
+	            .text(function(d) {
+	                return d.region + " in 2000: " + d.y2000 + "%";
+	            });
+
+
+
+    }
+    return {"resize": resize, "updateChart": updateChart}; 
+}
+		
+var myChart = drawDotplot();
+	var globalDatanew = "y2015";
 		
 	var running = false;
     var timer;
@@ -460,7 +600,7 @@
             $('button').html("Pause");
 
             var sliderValue = $("#slider").val();
-
+            globalDatanew = "y" + sliderValue;
             timer = setInterval(function() {
                 if (sliderValue < maxstep) {
                     sliderValue = sliderValue * 1 + 1;
@@ -470,7 +610,7 @@
                     
                 }
                 $('#slider').val(sliderValue);
-                updateChart("y" + sliderValue);
+                myChart.updateChart("y" + sliderValue);
             }, duration);
             running = true;
         }
@@ -479,43 +619,20 @@
 
     $("#slider").on("change", function() {
     	var sliderValue = $("#slider").val();
-        updateChart("y" + sliderValue);
+    	globalDatanew = "y" + sliderValue;
+        myChart.updateChart("y" + sliderValue);
         $("#range").html($("#slider").val());
         clearInterval(timer);
         $("button").html("Play");
     });
 
 
-    function resize() {
-      // console.log("hi!");
-        fullwidth = window.innerWidth/1.5,
-        width = fullwidth - margin.left - margin.right,
-    	height = fullheight - margin.top - margin.bottom;
-
-		widthScale = d3.scale.linear()
-						.range([ 0, width]);
-
-		heightScale = d3.scale.ordinal()
-						.rangeRoundBands([ margin.top, height], 0.2);
-
-		xAxis = d3.svg.axis()
-					.scale(widthScale)
-					.orient("bottom");
-
-		yAxis = d3.svg.axis()
-					.scale(heightScale)
-					.orient("left")
-					.innerTickSize([0]);
-
-		svg = d3.select(".chart")
-				.append("svg")
-				.attr("width", fullwidth)
-				.attr("height", fullheight);
-
-        // $("svg").height($(".counties").width()*0.618);
-    }
+    
+    $(window).resize(function(){myChart.resize(globalDatanew)});
 
 
+
+    
  
 
 
