@@ -36,11 +36,11 @@
 				margin: 0 auto;
 			}
 			div.y2015 {
-				color: #FFB300;
+				color: #057D9F;
 				display: inline;
 			}
 			div.y2000 {
-				color: #057D9F;
+				color: #FFB300;
 				display: inline;
 			}
 
@@ -94,7 +94,7 @@
 
 			/*//slider*/
 			#slider{
-			  width: 95%;
+			  width:48%;
 			  height: 4px;
 			  border: solid;
 			  border-width: 1px;
@@ -143,6 +143,12 @@
 			    cursor: pointer;
 			}
 
+			.difftext{
+				font-size: 0.6em;
+				color:#333;
+				background-color: #eee;
+			}
+
 
 		</style>
 	</head>
@@ -151,44 +157,44 @@
 		<div id="main">
 			<h1>Opioid Overdose Death Rates and All Drug Overdose Death Rates per 100,000 Population (Age-Adjusted)</h1>
 			<h3><div class="y2000">2000</div> versus <div class="y2015">2015</div></h3>
-			<p>This dotplot shows the difference in the neonatal morality rate from 2000 to 2015 by state</p>
-			<p>Note:</p>
 			<div class="slidercontainer">
 			    <input id="slider" type="range" min="2000" max="2015" value="2000" step="1">
 			    <span id="range">2000</span>
 			    <div class="yearLabel" style="left:0%">'00</div>
-			    <div class="yearLabel" style="left:6.25%">'01</div>
-			    <div class="yearLabel" style="left:12.5%">'02</div>
-			    <div class="yearLabel" style="left:18.75%">'03</div>
-			    <div class="yearLabel" style="left:25%">'04</div>
-			    <div class="yearLabel" style="left:31.25%">'05</div>
-			    <div class="yearLabel" style="left:37.5%">'06</div>
-			    <div class="yearLabel" style="left:43.75%">'07</div>
-			    <div class="yearLabel" style="left:50%">'08</div>
-			    <div class="yearLabel" style="left:56.25%">'09</div>
-			    <div class="yearLabel" style="left:62.5%">'10</div>
-			    <div class="yearLabel" style="left:68.75%">'11</div>
-			    <div class="yearLabel" style="left:75%">'12</div>
-			    <div class="yearLabel" style="left:81.25%">'13</div>
-			    <div class="yearLabel" style="left:87.5%">'14</div>
-			    <div class="yearLabel" style="left:93.75%">'15</div>
+			    <div class="yearLabel" style="left:3.125%">'01</div>
+			    <div class="yearLabel" style="left:6.25%">'02</div>
+			    <div class="yearLabel" style="left:9.375%">'03</div>
+			    <div class="yearLabel" style="left:12.5%">'04</div>
+			    <div class="yearLabel" style="left:15.625%">'05</div>
+			    <div class="yearLabel" style="left:18.75%">'06</div>
+			    <div class="yearLabel" style="left:21.875%">'07</div>
+			    <div class="yearLabel" style="left:25%">'08</div>
+			    <div class="yearLabel" style="left:28.125%">'09</div>
+			    <div class="yearLabel" style="left:31.25%">'10</div>
+			    <div class="yearLabel" style="left:34.375%">'11</div>
+			    <div class="yearLabel" style="left:37.5%">'12</div>
+			    <div class="yearLabel" style="left:40.625%">'13</div>
+			    <div class="yearLabel" style="left:43.75%">'14</div>
+			    <div class="yearLabel" style="left:46.875%">'15</div>
 
 
 			    <button class="button" name="play" id="play"><span>Play</span></button>
 			</div>
 			<div class="chart">
 			</div>
+			<p>This dotplot shows the difference in the neonatal morality rate from 2000 to 2015 by state</p>
+			<p>Note:</p>
 		</div>
 		
 	</body>
 
 <script type="text/javascript">
 			// this is the size of the svg container -- the white part
-		var fullwidth = 1/2* window.innerWidth,
+		var fullwidth = window.innerWidth>1000?innerWidth/2:innerWidth/1.1,
 			fullheight = 700;
 
 			// these are the margins around the graph. Axes labels go in margins.
-		var margin = {top: 20, right: 25, bottom: 20, left: 200};
+		var margin = {top: 20, right: 25, bottom: 20, left: 100};
 
 		var width = fullwidth - margin.left - margin.right,
     		height = fullheight - margin.top - margin.bottom;
@@ -310,10 +316,7 @@ function drawDotplot() {
                     return "#CC0000";
                 }
             })
-            .append("title")
-            .text(function(d) {
-                return d.region + " in 2000: " + d.y2000 + "%";
-            });
+            .append("title");
         // add the axes
 
         svg.append("g")
@@ -333,8 +336,6 @@ function drawDotplot() {
             .style("text-anchor", "middle")
             .attr("dy", "12")
             .text("per 100,000 population");
-
-
 
         var dotsnew = svg.selectAll("circle.new")
             .data(data)
@@ -362,6 +363,24 @@ function drawDotplot() {
         // Style one of the Y labels bold:
         var allYAxisLabels = d3.selectAll("g.y.axis g.tick text")[0]; // un-nest array
 
+        var diff = svg.selectAll("text.diff")
+        			.data(myData)
+        			.enter()
+        			.append("text")
+        			.attr("class","difftext")
+        			.attr("x", function(d) {
+               			return margin.left + widthScale(d.y2015) + 10; 
+           			 })
+        			.attr("y", function(d) {
+                		return heightScale(d.region) + heightScale.rangeBand() / 2 + 5;
+            		})
+        			.text(function(d) {
+        				if (isNaN(d.y2015 -d.y2000)){
+        					return ""
+        				}else{
+        					return "+" + parseFloat(Math.round(d.y2015 -d.y2000)*100/100).toFixed(0);
+        				}
+            		});
     };
 
     function updateChart(datanew) {
@@ -438,17 +457,36 @@ function drawDotplot() {
                 .style("fill", function(d) {
                     if (d.region === "United States") {
                         return "#CC0000";
+                    }else if(isNaN(d[datanew])){
+                    	return "#eeeeee";
                     }
                 })
-                .append("title")
-                .text(function(d) {
-                    return d.region + " in 2013: " + d[datanew] + "%";
-                });
+                .append("title");
+
+            var diff = d3.selectAll(".difftext")
+        			.attr("x", function(d) {
+               			return margin.left + widthScale(d[datanew]) + 10; 
+           			 })
+        			.attr("y", function(d) {
+                		return heightScale(d.region) + heightScale.rangeBand() / 2 + 5;
+            		})
+        			.text(function(d) {
+        				var change = (d[datanew] -d.y2000).toFixed(1);
+        				if (isNaN(d[datanew] -d.y2000)){
+        					return ""
+        				}else{
+        					if(change > 0){
+								return "+" + change;        			
+        					}else if (change <= 0){
+        						return change;
+        					}
+        				}
+            		});
         });
     }
 
     function resize(datanew) {
-        fullwidth = window.innerWidth / 2,
+        fullwidth = window.innerWidth /1.1,
             width = fullwidth - margin.left - margin.right,
             height = fullheight - margin.top - margin.bottom;
 
@@ -589,7 +627,7 @@ var myChart = drawDotplot();
 
     $('button').on('click', function() {
         var duration = 1000,
-            maxstep = 2015, //pretending to be 2014
+            maxstep = 2015, 
             minstep = 2000;
 
         if (running == true) {
@@ -606,8 +644,7 @@ var myChart = drawDotplot();
                     sliderValue = sliderValue * 1 + 1;
                     $('#slider').val(sliderValue);
                    
-                      $('#range').html(sliderValue);
-                    
+                      $('#range').html(sliderValue);                    
                 }
                 $('#slider').val(sliderValue);
                 myChart.updateChart("y" + sliderValue);
@@ -618,12 +655,17 @@ var myChart = drawDotplot();
     });
 
     $("#slider").on("change", function() {
-    	var sliderValue = $("#slider").val();
-    	globalDatanew = "y" + sliderValue;
-        myChart.updateChart("y" + sliderValue);
-        $("#range").html($("#slider").val());
-        clearInterval(timer);
-        $("button").html("Play");
+        var sliderValue = $("#slider").val();
+        $('#range').html(sliderValue);  
+        if(sliderValue == 2015){
+            $('button').html("Replay");
+        }else{
+            globalDatanew = "y" + sliderValue;
+            myChart.updateChart("y" + sliderValue);
+            $("#range").html($("#slider").val());
+            clearInterval(timer);
+            $("button").html("Play");
+        }
     });
 
 
